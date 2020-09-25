@@ -29,8 +29,7 @@
     "build:esm": "babel --copy-files src -d esm -s --env-name esm",
     "build:cjs": "babel --copy-files src -d lib -s",
     "clean": "rimraf esm lib",
-    "test": "jest",
-    "test-node": "bash -c 'for file in test/*.test.js; do node \"$file\"; done'"
+    "test": "jest"
   },
   "dependencies": {
     "assertion-error": "^1.1.0",
