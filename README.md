@@ -26,7 +26,6 @@ The classes here are:
   errors.  (This is used for parallel operations that return several errors.)
   
 > This project is a fork of https://github.com/joyent/node-verror with some changes:
-> - Rewritter with ES classes (implying perhaps to include it in your build)
 > - Is now browser compatible, no more dependencies linking it to Node
 > - `findCauseByType` and `hasCauseWithType` methods have been added
 > - `SError` class has been removed
