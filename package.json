@@ -1,0 +1,46 @@
+{
+  "name": "@openagenda/verror",
+  "description": "richer JavaScript errors",
+  "version": "2.1.8",
+  "license": "MIT",
+  "keywords": [
+    "error",
+    "errors",
+    "err",
+    "exception",
+    "exceptions",
+    "custom"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Oagenda/verror.git"
+  },
+  "files": [
+    "esm",
+    "lib"
+  ],
+  "main": "lib/verror.js",
+  "jsnext:main": "esm/verror.js",
+  "module": "esm/verror.js",
+  "sideEffects": false,
+  "scripts": {
+    "prepack": "yarn clean && yarn build",
+    "build": "yarn build:esm && yarn build:cjs",
+    "build:esm": "babel --copy-files src -d esm -s --env-name esm",
+    "build:cjs": "babel --copy-files src -d lib -s",
+    "clean": "rimraf esm lib",
+    "test": "jest",
+    "test-node": "bash -c 'for file in test/*.test.js; do node \"$file\"; done'"
+  },
+  "dependencies": {
+    "assertion-error": "^1.1.0",
+    "sprintf-js": "^1.1.2"
+  },
+  "devDependencies": {
+    "@babel/cli": "^7.10.4",
+    "@babel/core": "^7.10.4",
+    "@openagenda/babel-preset": "^1.3.8",
+    "jest": "^26.1.0",
+    "rimraf": "^3.0.1"
+  }
+}
