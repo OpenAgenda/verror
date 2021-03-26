@@ -1,17 +1,18 @@
 'use strict';
 
 /*
- * test/common.js: common utility functions used in multiple tests
+ * common utility functions used in multiple tests
  */
+
+const stackTraceRe = new RegExp('\\(/.*/*\.test\.js:\\d+:\\d+\\)', 'gm');
 
 /*
  * Remove full paths and relative line numbers from stack traces so that we can
  * compare against "known-good" output.
  */
-module.exports.cleanStack = function cleanStack(stacktxt) {
-  const re = new RegExp('\\(/.*/test.*js:\\d+:\\d+\\)', 'gm');
-  return stacktxt.replace(re, '(dummy filename)');
-};
+function cleanStack(stacktxt) {
+  return stacktxt.replace(stackTraceRe, '(dummy filename)');
+}
 
 /*
  * Save the generic parts of all stack traces so we can avoid hardcoding
@@ -19,15 +20,21 @@ module.exports.cleanStack = function cleanStack(stacktxt) {
  * The stack trace limit has to be large enough to capture all of Node's frames,
  * which are more than the default (10 frames) in Node v6.x.
  */
-module.exports.getNodeStack = function getNodeStack(sliceStart = 3, sliceEnd) {
-  return module.exports.cleanStack(new Error().stack.split('\n').slice(sliceStart, sliceEnd).join('\n'));
-};
+function getNodeStack(sliceStart = 3, sliceEnd) {
+  return cleanStack(new Error().stack.split('\n').slice(sliceStart, sliceEnd).join('\n'));
+}
 
 /*
  * Node's behavior with respect to Error's names and messages changed
  * significantly with v0.12, so a number of tests regrettably need to check for
  * that.
  */
-module.exports.oldNode = function oldNode() {
+function oldNode() {
   return /^0\.10\./.test(process.versions.node);
+}
+
+module.exports = {
+  cleanStack,
+  getNodeStack,
+  oldNode
 };

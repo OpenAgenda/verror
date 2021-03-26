@@ -10,7 +10,7 @@ const {
   hasCauseWithName,
   findCauseByType,
   hasCauseWithType
-} = require('../lib/verror');
+} = require('../lib');
 
 /*
   * This class deliberately doesn't inherit from our error classes.

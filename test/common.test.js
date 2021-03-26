@@ -4,8 +4,8 @@
  * tst.common.js: tests functionality that's common to the VError and WError classes.
  */
 
-const { VError, WError } = require('../lib/verror');
-const common = require('./common');
+const { VError, WError } = require('../lib');
+const common = require('./utils');
 
 /*
    * Runs all tests using the class "cons".  We'll apply this to each of the main

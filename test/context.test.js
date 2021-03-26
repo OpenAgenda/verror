@@ -3,7 +3,7 @@
  */
 
 const vm = require('vm');
-const VError = require('../lib/verror');
+const VError = require('../lib');
 
 const prog1 = 'callback(new Error(), "Error")';
 const prog2 = 'const e = new Error(); e.name = "BarError"; callback(e, "BarError")';

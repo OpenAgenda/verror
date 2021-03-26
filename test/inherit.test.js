@@ -3,9 +3,9 @@
  */
 
 const util = require('util');
-const common = require('./common');
+const common = require('./utils');
 
-const { VError, WError } = require('../lib/verror');
+const { VError, WError } = require('../lib');
 
 class VErrorChild extends VError {
 }
