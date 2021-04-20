@@ -31,6 +31,8 @@ module.exports = function parseConstructorArguments(...argv) {
   let options;
   let sprintfArgs;
 
+  // TODO missing asserts
+
   /*
    * First, figure out which form of invocation we've been given.
    */

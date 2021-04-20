@@ -7,21 +7,25 @@ import { isError, isFunc, isObject, isString } from './assert';
 import parseConstructorArguments from './parseConstructorArguments';
 import inheritsFrom from './inheritsFrom';
 import defineProperties from './defineProperties';
+import getInstance from './getInstance';
 
 /*
  * See README.md for reference documentation.
  */
 function VError(...args) {
-  if (!(this instanceof VError)) {
-    return new VError(...args);
-  }
+  /*
+   * This is a regrettable pattern, but JavaScript's built-in Error class
+   * is defined to work this way, so we allow the constructor to be called
+   * without "new".
+   */
+  const that = getInstance(this, VError, args);
 
   /*
    * For convenience and backwards compatibility, we support several
    * different calling forms. Normalize them here.
    */
   const { options, shortmessage } = parseConstructorArguments(...args);
-  const { cause } = options;
+  const { cause, constructorOpt, info, name, skipCauseMessage } = options;
   let message = shortmessage;
 
   /*
@@ -31,7 +35,7 @@ function VError(...args) {
   if (cause) {
     if (!isError(cause)) throw new AssertionError('cause must be an Error');
 
-    if (!options.skipCauseMessage && cause.message) {
+    if (!skipCauseMessage && cause.message) {
       message = message === ''
         ? cause.message
         : `${message}: ${cause.message}`;
@@ -39,17 +43,17 @@ function VError(...args) {
   }
 
   // super
-  Error.prototype.constructor.call(this, message);
+  Error.call(that, message);
 
-  this.message = message;
+  that.message = message;
 
   /*
    * If we've been given a name, apply it now.
    */
-  if (options.name) {
-    if (!isString(options.name))
+  if (name) {
+    if (!isString(name))
       throw new AssertionError('error\'s "name" must be a string');
-    this.name = options.name;
+    that.name = name;
   }
 
   /*
@@ -57,10 +61,10 @@ function VError(...args) {
    * this Error particularly) separately from the complete message (which
    * includes the messages of our cause chain).
    */
-  this.shortMessage = shortmessage;
+  that.shortMessage = shortmessage;
 
   if (cause) {
-    this.cause = cause;
+    that.cause = cause;
   }
 
   /*
@@ -69,21 +73,23 @@ function VError(...args) {
    * objects here, but we don't want to use the original object in case
    * the caller modifies it later.
    */
-  this.info = {};
+  that.info = {};
 
-  if (options.info) {
-    for (const k in options.info) {
-      if (Object.prototype.hasOwnProperty.call(options.info, k)) {
-        this.info[k] = options.info[k];
+  if (info) {
+    for (const k in info) {
+      if (Object.prototype.hasOwnProperty.call(info, k)) {
+        that.info[k] = info[k];
       }
     }
   }
 
   if (Error.captureStackTrace) {
-    Error.captureStackTrace(this, options.constructorOpt || this.constructor);
+    Error.captureStackTrace(that, constructorOpt || that.constructor);
   } else {
-    this.stack = (new Error()).stack;
+    that.stack = (new Error()).stack;
   }
+
+  return that;
 }
 
 inheritsFrom(VError, Error);
@@ -261,9 +267,7 @@ VError.prototype.name = 'VError';
  * error, in which case a summary message will be printed.
  */
 function MultiError(errors) {
-  if (!(this instanceof MultiError)) {
-    return new MultiError(errors);
-  }
+  const that = getInstance(this, MultiError, errors);
 
   if (!Array.isArray(errors)) {
     throw new AssertionError('list of errors (array) is required');
@@ -273,7 +277,7 @@ function MultiError(errors) {
   }
 
   // super
-  VError.prototype.constructor.call(this, {
+  VError.call(that, {
       cause: errors[0],
     },
     'first of %d error%s',
@@ -281,7 +285,9 @@ function MultiError(errors) {
     errors.length === 1 ? '' : 's'
   );
 
-  this.ase_errors = errors;
+  that.ase_errors = errors;
+
+  return that;
 }
 
 inheritsFrom(MultiError, VError);
@@ -301,16 +307,16 @@ MultiError.prototype.name = 'MultiError';
  * See README.md for reference details.
  */
 function WError(...args) {
-  if (!(this instanceof WError)) {
-    return new WError(...args);
-  }
+  const that = getInstance(this, WError, args);
 
   const { options, shortmessage } = parseConstructorArguments(...args);
 
   options.skipCauseMessage = true;
 
   // super
-  VError.prototype.constructor.call(this, options, '%s', shortmessage);
+  VError.call(that, options, '%s', shortmessage);
+
+  return that;
 }
 
 inheritsFrom(WError, VError);
