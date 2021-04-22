@@ -36,8 +36,9 @@ it('VError', () => {
   stack = common.cleanStack(err.stack);
   expect(stack).toBe([
     'VError: proximate cause: 3 issues: root cause',
-    '    at Object.<anonymous> (dummy filename)'
-  ].join('\n') + '\n' + nodestack);
+    '    at Object.<anonymous> (dummy filename)',
+    nodestack
+  ].join('\n'));
 
   /* caused by another VError, with annotation. */
   suberr = err;
@@ -65,12 +66,13 @@ it('VError', () => {
   stack = common.cleanStack(VError.fullStack(err));
   expect(stack).toBe([
     'VError: top: mid: root cause',
-    '    at Object.<anonymous> (dummy filename)'
-  ].join('\n') + '\n' + nodestack + '\n' + [
+    '    at Object.<anonymous> (dummy filename)',
+    nodestack,
     'caused by: VError: mid: root cause',
-    '    at Object.<anonymous> (dummy filename)'
-  ].join('\n') + '\n' + nodestack + '\n' + [
+    '    at Object.<anonymous> (dummy filename)',
+    nodestack,
     'caused by: Error: root cause',
-    '    at Object.<anonymous> (dummy filename)'
-  ].join('\n') + '\n' + nodestack);
+    '    at Object.<anonymous> (dummy filename)',
+    nodestack
+  ].join('\n'));
 });

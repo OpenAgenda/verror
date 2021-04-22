@@ -19,9 +19,9 @@
     "esm",
     "lib"
   ],
-  "main": "lib/verror.js",
-  "jsnext:main": "esm/verror.js",
-  "module": "esm/verror.js",
+  "main": "lib/index.js",
+  "jsnext:main": "esm/index.js",
+  "module": "esm/index.js",
   "sideEffects": false,
   "scripts": {
     "prepack": "yarn clean && yarn build",
