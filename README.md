@@ -24,9 +24,11 @@ The classes here are:
   for logging and debugging.
 * **MultiError**, which is just an Error that encapsulates one or more other
   errors.  (This is used for parallel operations that return several errors.)
+* [http errors](#http-errors)
   
 > This project is a fork of https://github.com/joyent/node-verror with some changes:
 > - Is now browser compatible, no more dependencies linking it to Node
+> - [http errors](#http-errors) with `decorate` option have been added
 > - `findCauseByType` and `hasCauseWithType` methods have been added
 > - `SError` class has been removed
 
@@ -226,17 +228,17 @@ The VError constructor has several forms:
  * This is the most general form.  You can specify any supported options
  * (including "cause" and "info") this way.
  */
-new VError(options, sprintf_args...)
+new VError(options, ...sprintfArgs)
 
 /*
  * This is a useful shorthand when the only option you need is "cause".
  */
-new VError(cause, sprintf_args...)
+new VError(cause, ...sprintfArgs)
 
 /*
  * This is a useful shorthand when you don't need any options at all.
  */
-new VError(sprintf_args...)
+new VError(...sprintfArgs)
 ```
 
 All of these forms construct a new VError that behaves just like the built-in
@@ -249,9 +251,9 @@ Option name      | Type             | Meaning
 ---------------- | ---------------- | -------
 `name`           | string           | Describes what kind of error this is.  This is intended for programmatic use to distinguish between different kinds of errors.  Note that in modern versions of Node.js, this name is ignored in the `stack` property value, but callers can still use the `name` property to get at it.
 `cause`          | any Error object | Indicates that the new error was caused by `cause`.  See `cause()` below.  If unspecified, the cause will be `null`.
-`strict`         | boolean          | If true, then `null` and `undefined` values in `sprintf_args` are passed through to `sprintf()`.  Otherwise, these are replaced with the strings `'null'`, and '`undefined`', respectively.
 `constructorOpt` | function         | If specified, then the stack trace for this error ends at function `constructorOpt`.  Functions called by `constructorOpt` will not show up in the stack.  This is useful when this class is subclassed.
-`info`           | object           | Specifies arbitrary informational properties that are available through the `VError.info(err)` static class method.  See that method for details.
+`info`           | object           | Specifies arbitrary informational properties that are available through the `VError.info(err)` static class method.  See [that method](#verrorinfoerr) for details.
+`decorate`       | object           | Specifies arbitrary informational properties that are available through `this` instance.  Like `code` and `className` with [http errors](#http-errors) for details.
 
 The second form is equivalent to using the first form with the specified `cause`
 as the error's cause.  This form is distinguished from the first form because
@@ -277,7 +279,7 @@ Property name | Type   | Meaning
 `stack`       | string | Human-readable stack trace where the Error was constructed.
 
 For all of these classes, the printf-style arguments passed to the constructor
-are processed with `sprintf()` to form a message.  For `WError`, this becomes
+are processed with [`sprintf()`](https://github.com/alexei/sprintf.js#sprintf) to form a message.  For `WError`, this becomes
 the complete `message` property.  For `VError`, this message is
 prepended to the message of the cause, if any (with a suitable separator), and
 the result becomes the `message` property.
@@ -397,12 +399,12 @@ case:
 const err1 = new VError('something bad happened');
 /* ... */
 const err2 = new VError({
-    'name': 'ConnectionError',
-    'cause': err1,
-    'info': {
-        'errno': 'ECONNREFUSED',
-        'remote_ip': '127.0.0.1',
-        'port': 215
+    name: 'ConnectionError',
+    cause: err1,
+    info: {
+        errno: 'ECONNREFUSED',
+        remoteIp: '127.0.0.1',
+        port: 215
     }
 }, 'failed to connect to "%s:%d"', '127.0.0.1', 215);
 
@@ -416,7 +418,7 @@ This outputs:
 
     failed to connect to "127.0.0.1:215": something bad happened
     ConnectionError
-    { errno: 'ECONNREFUSED', remote_ip: '127.0.0.1', port: 215 }
+    { errno: 'ECONNREFUSED', remoteIp: '127.0.0.1', port: 215 }
     ConnectionError: failed to connect to "127.0.0.1:215": something bad happened
         at Object.<anonymous> (/home/dap/node-verror/examples/info.js:5:12)
         at Module._compile (module.js:456:26)
@@ -427,16 +429,16 @@ This outputs:
         at startup (node.js:119:16)
         at node.js:935:3
 
-Information properties are inherited up the cause chain, with values at the top
+Information properties are inherited up the `cause` chain, with values at the top
 of the chain overriding same-named values lower in the chain.  To continue that
 example:
 
 ```javascript
 const err3 = new VError({
-    'name': 'RequestError',
-    'cause': err2,
-    'info': {
-        'errno': 'EBADREQUEST'
+    name: 'RequestError',
+    cause: err2,
+    info: {
+        errno: 'EBADREQUEST'
     }
 }, 'request failed');
 
@@ -450,7 +452,7 @@ This outputs:
 
     request failed: failed to connect to "127.0.0.1:215": something bad happened
     RequestError
-    { errno: 'EBADREQUEST', remote_ip: '127.0.0.1', port: 215 }
+    { errno: 'EBADREQUEST', remoteIp: '127.0.0.1', port: 215 }
     RequestError: request failed: failed to connect to "127.0.0.1:215": something bad happened
         at Object.<anonymous> (/home/dap/node-verror/examples/info.js:20:12)
         at Module._compile (module.js:456:26)
@@ -499,21 +501,21 @@ it's a `VError` or not.
 
 # Reference: MultiError
 
-MultiError is an Error class that represents a group of Errors.  This is used
+`MultiError` is an Error class that represents a group of Errors.  This is used
 when you logically need to provide a single Error, but you want to preserve
 information about multiple underying Errors.  A common case is when you execute
 several operations in parallel and some of them fail.
 
-MultiErrors are constructed as:
+MultiError are constructed as:
 
 ```javascript
-new MultiError(error_list)
+new MultiError(errorList)
 ```
 
-`error_list` is an array of at least one `Error` object.
+`errorList` is an array of at least one `Error` object.
 
-The cause of the MultiError is the first error provided.  None of the other
-`VError` options are supported.  The `message` for a MultiError consists the
+The `cause` of the `MultiError` is the first error provided.  None of the other
+`VError` options are supported.  The `message` for a `MultiError` consists the
 `message` from the first error, prepended with a message indicating that there
 were other errors.
 
@@ -540,8 +542,85 @@ to use than this constructor.
 
 ### `errors()`
 
-Returns an array of the errors used to construct this MultiError.
+Returns an array of the errors used to construct this `MultiError`.
 
+# Http errors
+
+The following error types, all of which are instances of `VError`, are available:
+
+- 400: `BadRequest`
+- 401: `NotAuthenticated`
+- 402: `PaymentError`
+- 403: `Forbidden`
+- 404: `NotFound`
+- 405: `MethodNotAllowed`
+- 406: `NotAcceptable`
+- 408: `Timeout`
+- 409: `Conflict`
+- 411: `LengthRequired`
+- 422: `Unprocessable`
+- 429: `TooManyRequests`
+- 500: `GeneralError`
+- 501: `NotImplemented`
+- 502: `BadGateway`
+- 503: `Unavailable`
+
+These errors are aliased by their http code, such as `VError[400] === VError.BadRequest`.
+
+All http errors have a default `options.decorate` with the following values, which are overridable:
+
+- `code` - The HTTP status code
+- `className` - A CSS compatible name of the error type. (e.g. "bad-request" , etc.)
+
+# Example
+
+```js
+const err1 = new VError('bad usage');
+/* ... */
+const err2 = new GeneralError(err1, 'something went wrong');
+
+console.log(err2.toJSON());
+console.log(VError.fullStack(err2));
+```
+
+This outputs:
+```
+{
+  name: 'GeneralError',
+  message: 'something went wrong: bad usage',
+  shortMessage: 'something went wrong',
+  cause: VError: bad usage
+      at Object.<anonymous> (/home/bertho/dev/verror/test.js:5:14)
+      at Module._compile (node:internal/modules/cjs/loader:1092:14)
+      at Object.Module._extensions..js (node:internal/modules/cjs/loader:1121:10)
+      at Module.load (node:internal/modules/cjs/loader:972:32)
+      at Function.Module._load (node:internal/modules/cjs/loader:813:14)
+      at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:76:12)
+      at node:internal/main/run_main_module:17:47 {
+    shortMessage: 'bad usage',
+    info: {}
+  },
+  info: {},
+  code: 500,
+  className: 'general-error'
+}
+GeneralError: something went wrong: bad usage
+    at Object.<anonymous> (/home/bertho/dev/verror/test.js:7:14)
+    at Module._compile (node:internal/modules/cjs/loader:1092:14)
+    at Object.Module._extensions..js (node:internal/modules/cjs/loader:1121:10)
+    at Module.load (node:internal/modules/cjs/loader:972:32)
+    at Function.Module._load (node:internal/modules/cjs/loader:813:14)
+    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:76:12)
+    at node:internal/main/run_main_module:17:47
+caused by: VError: bad usage
+    at Object.<anonymous> (/home/bertho/dev/verror/test.js:5:14)
+    at Module._compile (node:internal/modules/cjs/loader:1092:14)
+    at Object.Module._extensions..js (node:internal/modules/cjs/loader:1121:10)
+    at Module.load (node:internal/modules/cjs/loader:972:32)
+    at Function.Module._load (node:internal/modules/cjs/loader:813:14)
+    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:76:12)
+    at node:internal/main/run_main_module:17:47
+```
 
 # Contributing
 
