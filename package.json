@@ -1,7 +1,7 @@
 {
   "name": "@openagenda/verror",
   "description": "richer JavaScript errors",
-  "version": "2.1.9",
+  "version": "3.0.0",
   "license": "MIT",
   "keywords": [
     "error",
