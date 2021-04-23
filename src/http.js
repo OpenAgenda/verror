@@ -2,163 +2,143 @@ import parseConstructorArguments from './parseConstructorArguments';
 import VError from './verror';
 import { inheritsFrom, getInstance } from './utils';
 
-function getArgs(code, className, args) {
+function extendVError(that, ctor, code, className, args) {
   const { options, shortmessage } = parseConstructorArguments(...args);
-  const decorate = {
-    code,
-    className
-  };
 
-  if (options.decorate) {
-    Object.assign(decorate, options.decorate);
+  options.decorate = {
+    code,
+    className,
+    ...options.decorate
   }
 
-  return [
-    {
-      ...options,
-      decorate
-    },
-    shortmessage
-  ];
-}
-
-function HttpError(...args) {
-  return VError.apply(
-    getInstance(this, HttpError, args),
-    getArgs(400, 'bad-request', args)
-  );
-}
-inheritsFrom(HttpError, VError);
-HttpError.prototype.name = 'HttpError';
-
-function extendHttpError(that, ctor, code, className, args) {
-  return HttpError.apply(
+  return VError.call(
     getInstance(that, ctor, args),
-    getArgs(code, className, args)
+    options,
+    shortmessage
   );
 }
 
 // 400 - Bad Request
 function BadRequest(...args) {
-  return extendHttpError(this, BadRequest, 400, 'bad-request', args);
+  return extendVError(this, BadRequest, 400, 'bad-request', args);
 }
-inheritsFrom(BadRequest, HttpError);
+inheritsFrom(BadRequest, VError);
 BadRequest.prototype.name = 'BadRequest';
 
 // 401 - Not Authenticated
 function NotAuthenticated(...args) {
-  return extendHttpError(this, NotAuthenticated, 401, 'not-authenticated', args);
+  return extendVError(this, NotAuthenticated, 401, 'not-authenticated', args);
 }
-inheritsFrom(NotAuthenticated, HttpError);
+inheritsFrom(NotAuthenticated, VError);
 NotAuthenticated.prototype.name = 'NotAuthenticated';
 
 // 402 - Payment Error
 function PaymentError(...args) {
-  return extendHttpError(this, PaymentError, 402, 'payment-error', args);
+  return extendVError(this, PaymentError, 402, 'payment-error', args);
 }
-inheritsFrom(PaymentError, HttpError);
+inheritsFrom(PaymentError, VError);
 PaymentError.prototype.name = 'PaymentError';
 
 // 403 - Forbidden
 function Forbidden(...args) {
-  return extendHttpError(this, Forbidden, 403, 'forbidden', args);
+  return extendVError(this, Forbidden, 403, 'forbidden', args);
 }
-inheritsFrom(Forbidden, HttpError);
+inheritsFrom(Forbidden, VError);
 Forbidden.prototype.name = 'Forbidden';
 
 // 404 - Not Found
 function NotFound(...args) {
-  return extendHttpError(this, NotFound, 404, 'not-found', args);
+  return extendVError(this, NotFound, 404, 'not-found', args);
 }
-inheritsFrom(NotFound, HttpError);
+inheritsFrom(NotFound, VError);
 NotFound.prototype.name = 'NotFound';
 
 // 405 - Method Not Allowed
 function MethodNotAllowed(...args) {
-  return extendHttpError(this, MethodNotAllowed, 405, 'method-not-allowed', args);
+  return extendVError(this, MethodNotAllowed, 405, 'method-not-allowed', args);
 }
-inheritsFrom(MethodNotAllowed, HttpError);
+inheritsFrom(MethodNotAllowed, VError);
 MethodNotAllowed.prototype.name = 'MethodNotAllowed';
 
 // 406 - Not Acceptable
 function NotAcceptable(...args) {
-  return extendHttpError(this, NotAcceptable, 406, 'not-acceptable', args);
+  return extendVError(this, NotAcceptable, 406, 'not-acceptable', args);
 }
-inheritsFrom(NotAcceptable, HttpError);
+inheritsFrom(NotAcceptable, VError);
 NotAcceptable.prototype.name = 'NotAcceptable';
 
 // 408 - Timeout
 function Timeout(...args) {
-  return extendHttpError(this, Timeout, 408, 'timeout', args);
+  return extendVError(this, Timeout, 408, 'timeout', args);
 }
-inheritsFrom(Timeout, HttpError);
+inheritsFrom(Timeout, VError);
 Timeout.prototype.name = 'Timeout';
 
 // 409 - Conflict
 function Conflict(...args) {
-  return extendHttpError(this, Conflict, 409, 'conflict', args);
+  return extendVError(this, Conflict, 409, 'conflict', args);
 }
-inheritsFrom(Conflict, HttpError);
+inheritsFrom(Conflict, VError);
 Conflict.prototype.name = 'Conflict';
 
 // 410 - Gone
 function Gone(...args) {
-  return extendHttpError(this, Gone, 410, 'gone', args);
+  return extendVError(this, Gone, 410, 'gone', args);
 }
-inheritsFrom(Gone, HttpError);
+inheritsFrom(Gone, VError);
 Gone.prototype.name = 'Gone';
 
 // 411 - Length Required
 function LengthRequired(...args) {
-  return extendHttpError(this, LengthRequired, 411, 'length-required', args);
+  return extendVError(this, LengthRequired, 411, 'length-required', args);
 }
-inheritsFrom(LengthRequired, HttpError);
+inheritsFrom(LengthRequired, VError);
 LengthRequired.prototype.name = 'LengthRequired';
 
 // 422 - Unprocessable
 function Unprocessable(...args) {
-  return extendHttpError(this, Unprocessable, 422, 'unprocessable', args);
+  return extendVError(this, Unprocessable, 422, 'unprocessable', args);
 }
-inheritsFrom(Unprocessable, HttpError);
+inheritsFrom(Unprocessable, VError);
 Unprocessable.prototype.name = 'Unprocessable';
 
 // 429 - Too Many Requests
 function TooManyRequests(...args) {
-  return extendHttpError(this, TooManyRequests, 429, 'too-many-requests', args);
+  return extendVError(this, TooManyRequests, 429, 'too-many-requests', args);
 }
-inheritsFrom(TooManyRequests, HttpError);
+inheritsFrom(TooManyRequests, VError);
 TooManyRequests.prototype.name = 'TooManyRequests';
 
 // 500 - General Error
 function GeneralError(...args) {
-  return extendHttpError(this, GeneralError, 500, 'general-error', args);
+  return extendVError(this, GeneralError, 500, 'general-error', args);
 }
-inheritsFrom(GeneralError, HttpError);
+inheritsFrom(GeneralError, VError);
 GeneralError.prototype.name = 'GeneralError';
 
 // 501 - Not Implemented
 function NotImplemented(...args) {
-  return extendHttpError(this, NotImplemented, 501, 'not-implemented', args);
+  return extendVError(this, NotImplemented, 501, 'not-implemented', args);
 }
-inheritsFrom(NotImplemented, HttpError);
+inheritsFrom(NotImplemented, VError);
 NotImplemented.prototype.name = 'NotImplemented';
 
 // 502 - Bad Gateway
 function BadGateway(...args) {
-  return extendHttpError(this, BadGateway, 502, 'bad-gateway', args);
+  return extendVError(this, BadGateway, 502, 'bad-gateway', args);
 }
-inheritsFrom(BadGateway, HttpError);
+inheritsFrom(BadGateway, VError);
 BadGateway.prototype.name = 'BadGateway';
 
 // 503 - Unavailable
 function Unavailable(...args) {
-  return extendHttpError(this, Unavailable, 503, 'unavailable', args);
+  return extendVError(this, Unavailable, 503, 'unavailable', args);
 }
-inheritsFrom(Unavailable, HttpError);
+inheritsFrom(Unavailable, VError);
 Unavailable.prototype.name = 'Unavailable';
 
 export {
-  HttpError,
+  VError,
   BadRequest,
   NotAuthenticated,
   PaymentError,

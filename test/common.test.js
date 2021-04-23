@@ -210,7 +210,6 @@ describe('common', () => {
 
   runTests(VError, 'VError');
   runTests(VError.WError, 'WError');
-  runTests(VError.HttpError, 'HttpError');
   runTests(VError.BadRequest, 'BadRequest');
   runTests(VError.NotAuthenticated, 'NotAuthenticated');
   runTests(VError.PaymentError, 'PaymentError');

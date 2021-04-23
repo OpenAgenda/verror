@@ -5,8 +5,6 @@
 const VError = require('../lib');
 const common = require('./utils');
 
-const { HttpError } = VError;
-
 function runTests(Cons, label, isHttpError = true) {
   class Child extends Cons {
   }
@@ -27,7 +25,6 @@ function runTests(Cons, label, isHttpError = true) {
       expect(VError.cause(err)).toBe(suberr);
 
       if (isHttpError) {
-        expect(err).toBeInstanceOf(HttpError);
         expect(typeof err.code).toBe('number');
         expect(typeof err.className).toBe('string');
       }
@@ -90,7 +87,6 @@ function runTests(Cons, label, isHttpError = true) {
 describe('inherit', () => {
   runTests(VError, 'VError', false);
   runTests(VError.WError, 'WError', false);
-  runTests(VError.HttpError, 'HttpError');
   runTests(VError.BadRequest, 'BadRequest');
   runTests(VError.NotAuthenticated, 'NotAuthenticated');
   runTests(VError.PaymentError, 'PaymentError');

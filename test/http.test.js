@@ -2,7 +2,6 @@ const VError = require('../lib');
 
 describe('http', () => {
   describe('error types', () => {
-    expect(typeof VError.HttpError).toBe('function');
     expect(typeof VError.BadRequest).toBe('function');
     expect(typeof VError.NotAuthenticated).toBe('function');
     expect(typeof VError.PaymentError).toBe('function');
