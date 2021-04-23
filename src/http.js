@@ -31,9 +31,9 @@ function HttpError(...args) {
 inheritsFrom(HttpError, VError);
 HttpError.prototype.name = 'HttpError';
 
-function extendHttpError(_this, ctor, code, className, args) {
+function extendHttpError(that, ctor, code, className, args) {
   return HttpError.apply(
-    getInstance(_this, ctor, args),
+    getInstance(that, ctor, args),
     getArgs(code, className, args)
   );
 }

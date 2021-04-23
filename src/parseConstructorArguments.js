@@ -12,9 +12,9 @@ const { isError, isObject, isString } = require('./assert');
  *                interpreted as described in README.md.  For quick
  *                reference, "argv" has one of the following forms:
  *
- *            [ sprintf_args... ]           (argv[0] is a string)
- *            [ cause, sprintf_args... ]    (argv[0] is an Error)
- *            [ options, sprintf_args... ]  (argv[0] is an object)
+ *            [ sprintfArgs... ]           (argv[0] is a string)
+ *            [ cause, sprintfArgs... ]    (argv[0] is an Error)
+ *            [ options, sprintfArgs... ]  (argv[0] is an object)
  *
  * This function normalizes these forms, producing an object with the following
  * properties:
@@ -24,7 +24,7 @@ const { isError, isObject, isString } = require('./assert');
  *               (i.e., it may be a shallow copy), so it can be freely
  *               modified.
  *
- *    shortmessage    result of sprintf(sprintf_args), taking options.strict
+ *    shortmessage    result of sprintf(sprintfArgs), taking options.strict
  *                    into account as described in README.md.
  */
 module.exports = function parseConstructorArguments(...argv) {
@@ -60,7 +60,7 @@ module.exports = function parseConstructorArguments(...argv) {
   }
 
   if (!isObject(options)) throw new AssertionError('options (object) is required');
-  if (options.decorate && !isObject(options.decorate)) throw new AssertionError('decorate must be an object');
+  if (options.decorate && !isObject(options.decorate)) throw new AssertionError('options.decorate must be an object');
 
   return {
     options,

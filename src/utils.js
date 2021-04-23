@@ -17,9 +17,9 @@ export function inheritsFrom(Child, Parent) {
   Child.__proto__ = Parent;
 }
 
-export function getInstance(_this, ctor, args) {
-  if (_this instanceof ctor) {
-    return _this;
+export function getInstance(that, ctor, args) {
+  if (that instanceof ctor) {
+    return that;
   }
 
   // Equivalent to `new ctor(...args)` without polluting stackTrace

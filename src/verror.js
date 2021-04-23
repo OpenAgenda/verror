@@ -301,19 +301,16 @@ function MultiError(errors) {
   }
 
   // super
-  const that = VError.call(
+  return VError.call(
     getInstance(this, MultiError, errors),
     {
       cause: errors[0],
+      decorate: { errors }
     },
     'first of %d error%s',
     errors.length,
     errors.length === 1 ? '' : 's'
   );
-
-  that.ase_errors = errors;
-
-  return that;
 }
 
 inheritsFrom(MultiError, VError);
@@ -322,7 +319,7 @@ defineProperties(MultiError.prototype, [
   {
     key: 'errors',
     value: function errors() {
-      return this.ase_errors.slice(0);
+      return this[DECORATE].errors.slice(0);
     }
   }
 ]);
