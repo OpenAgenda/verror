@@ -13,7 +13,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/Oagenda/verror.git"
+    "url": "https://github.com/OpenAgenda/verror.git"
   },
   "files": [
     "esm",
