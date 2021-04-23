@@ -1,11 +1,12 @@
 /*
- * tst.info.js: tests the way informational properties are inherited with nested
+ * tst.meta.js: tests the way metarmational properties are inherited with nested
  * errors.
  */
 
 const VError = require('../lib');
+const { META } = VError;
 
-describe('info', () => {
+describe('meta', () => {
   it('base case using "options" to specify cause', () => {
     const err1 = new Error('bad');
     const err2 = new VError({
@@ -14,51 +15,53 @@ describe('info', () => {
 
     expect(VError.cause(err2)).toBe(err1);
     expect(err2.message).toBe('worse: bad');
-    expect(VError.info(err2)).toEqual({});
+    expect(VError.meta(err2)).toEqual({});
+    expect(err2[META]).toEqual({});
   });
 
-  it('simple info usage', () => {
-    const info = {
+  it('simple meta usage', () => {
+    const meta = {
       errno: 'EDEADLK',
       anObject: { hello: 'world' }
     };
     const err1 = new VError({
       name: 'MyError',
-      info
+      meta
     }, 'bad');
 
     expect(err1.name).toBe('MyError');
-    expect(VError.info(err1)).toEqual(info);
+    expect(VError.meta(err1)).toEqual(meta);
+    expect(err1[META]).toEqual(meta);
   });
 
   it('simple property propagation using old syntax', () => {
-    const info = {
+    const meta = {
       errno: 'EDEADLK',
       anObject: { hello: 'world' }
     };
     const err1 = new VError({
       name: 'MyError',
-      info
+      meta
     }, 'bad');
     const err2 = new VError(err1, 'worse');
 
     expect(VError.cause(err2)).toBe(err1);
     expect(err2.message).toBe('worse: bad');
-    expect(VError.info(err2)).toEqual(info);
+    expect(VError.meta(err2)).toEqual(meta);
   });
 
   it('one property override', () => {
-    const info = {
+    const meta = {
       errno: 'EDEADLK',
       anObject: { hello: 'world' }
     };
     const err1 = new VError({
       name: 'MyError',
-      info
+      meta
     }, 'bad');
     const err2 = new VError({
       cause: err1,
-      info: {
+      meta: {
         anObject: { hello: 'moon' }
       }
     }, 'worse');
@@ -70,28 +73,29 @@ describe('info', () => {
 
     expect(VError.cause(err2)).toEqual(err1);
     expect(err2.message).toEqual('worse: bad');
-    expect(VError.info(err2)).toEqual(expected);
+    expect(VError.meta(err2)).toEqual(expected);
+    expect(err2[META]).toEqual(expected);
   });
 
   it('add a third-level to the chain', () => {
-    const info = {
+    const meta = {
       errno: 'EDEADLK',
       anObject: { hello: 'world' }
     };
     const err1 = new VError({
       name: 'MyError',
-      info
+      meta
     }, 'bad');
     const err2 = new VError({
       cause: err1,
-      info: {
+      meta: {
         anObject: { hello: 'moon' }
       }
     }, 'worse');
     const err3 = new VError({
       cause: err2,
       name: 'BigError',
-      info: {
+      meta: {
         remoteIp: '127.0.0.1'
       }
     }, 'what next');
@@ -105,6 +109,7 @@ describe('info', () => {
     expect(err3.name).toBe('BigError');
     expect(VError.cause(err3)).toBe(err2);
     expect(err3.message).toBe('what next: worse: bad');
-    expect(VError.info(err3)).toEqual(expected);
+    expect(VError.meta(err3)).toEqual(expected);
+    expect(err3[META]).toEqual(expected);
   });
 });

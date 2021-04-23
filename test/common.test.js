@@ -176,7 +176,7 @@ function runTests(Cons, label) {
       ].join('\n'));
     });
 
-    describe('invoked without "new"', () => {
+    it('invoked without "new"', () => {
       const err = Cons('my %s string', 'testing!');
 
       expect(err.name).toBe(label);
@@ -185,7 +185,7 @@ function runTests(Cons, label) {
       expect(err.message).toBe('my testing! string');
     });
 
-    describe('custom "name"', () => {
+    it('custom "name"', () => {
       const err = new Cons({ name: 'SomeOtherError' }, 'another kind of error');
       const nodestack = common.getNodeStack();
 
@@ -198,7 +198,7 @@ function runTests(Cons, label) {
 
       expect(stack).toBe([
         'SomeOtherError: another kind of error',
-        '    at Suite.<anonymous> (dummy filename)',
+        '    at Object.<anonymous> (dummy filename)',
         nodestack
       ].join('\n'));
     });

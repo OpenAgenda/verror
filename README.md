@@ -28,7 +28,7 @@ The classes here are:
   
 > This project is a fork of https://github.com/joyent/node-verror with some changes:
 > - Is now browser compatible, no more dependencies linking it to Node
-> - [http errors](#http-errors) with `decorate` option have been added
+> - [http errors](#http-errors) with `meta` option have been added
 > - `findCauseByType` and `hasCauseWithType` methods have been added
 > - `SError` class has been removed
 
@@ -104,7 +104,7 @@ The idea is that each layer in the stack annotates the error with a description
 of what it was doing.  The end result is a message that explains what happened
 at each level.
 
-You can also decorate Error objects with additional information so that callers
+You can also meta Error objects with additional information so that callers
 can not only handle each kind of error differently, but also construct their own
 error messages (e.g., to localize them, format them, group them by type, and so
 on).  See the example below.
@@ -154,9 +154,8 @@ code.  There are two obvious ways that this could break such consumers:
   `lineNumber`, and a few others.  Plus, it's useful for some Error subclasses
   to have their own private properties -- and there'd be no way to know whether
   these should be copied.  For these reasons, VError first-classes these
-  information properties.  You have to provide them in the constructor, you can
-  only fetch them with the `info()` function, and VError takes care of making
-  sure properties from causes wind up in the `info()` output.
+  information properties.  VError takes care of making
+  sure properties from causes wind up in the `info()` and `meta()` output.
 
 Let's put this all together with an example from the node-fast RPC library.
 node-fast implements a simple RPC protocol for Node programs.  There's a server
@@ -253,7 +252,7 @@ Option name      | Type             | Meaning
 `cause`          | any Error object | Indicates that the new error was caused by `cause`.  See `cause()` below.  If unspecified, the cause will be `null`.
 `constructorOpt` | function         | If specified, then the stack trace for this error ends at function `constructorOpt`.  Functions called by `constructorOpt` will not show up in the stack.  This is useful when this class is subclassed.
 `info`           | object           | Specifies arbitrary informational properties that are available through the `VError.info(err)` static class method.  See [that method](#verrorinfoerr) for details.
-`decorate`       | object           | Specifies arbitrary informational properties that are available through `this` instance.  Like `code` and `className` with [http errors](#http-errors) for details.
+`meta`       | object           | Specifies arbitrary informational properties that are available through `this` instance.  Like `code` and `className` with [http errors](#http-errors) for details.<br /><br />Works like info with a few differences:<br /><br />- properties are assigned to the instance itself rather than to an info sub-object.<br />- the properties are copied to this in the constructor, which implies that an error also has all the meta of its cause chain at its level.
 
 The second form is equivalent to using the first form with the specified `cause`
 as the error's cause.  This form is distinguished from the first form because
@@ -310,12 +309,23 @@ with this Error and all of its causes.  These are the properties passed in using
 the `info` option to the constructor.  Properties not specified in the
 constructor for this Error are implicitly inherited from this error's cause.
 
-These properties are intended to provide programmatically-accessible metadata
+These properties are intended to provide programmatically-accessible data
 about the error.  For an error that indicates a failure to resolve a DNS name,
 informational properties might include the DNS name to be resolved, or even the
 list of resolvers used to resolve it.  The values of these properties should
 generally be plain objects (i.e., consisting only of null, undefined, numbers,
 booleans, strings, and objects and arrays containing only other plain objects).
+
+### `VError.meta(err)`
+
+Returns an object with all of the meta error information that's been associated
+with this Error and all of its causes.  These are the properties passed in using
+the `meta` option to the constructor.  Properties not specified in the
+constructor for this Error are implicitly inherited from this error's cause.
+
+These properties are intended to provide first level metadata
+about the error.  For an http error, the meta may include the `code` and`
+className` properties. `meta` must be an object.
 
 ### `VError.fullStack(err)`
 
@@ -567,7 +577,7 @@ The following error types, all of which are instances of `VError`, are available
 
 These errors are aliased by their http code, such as `VError[400] === VError.BadRequest`.
 
-All http errors have a default `options.decorate` with the following values, which are overridable:
+All http errors have a default `options.meta` with the following values, which are overridable:
 
 - `code` - The HTTP status code
 - `className` - A CSS compatible name of the error type. (e.g. "bad-request" , etc.)
@@ -584,43 +594,42 @@ console.log(VError.fullStack(err2));
 ```
 
 This outputs:
-```
-{
-  name: 'GeneralError',
-  message: 'something went wrong: bad usage',
-  shortMessage: 'something went wrong',
-  cause: VError: bad usage
-      at Object.<anonymous> (/home/bertho/dev/verror/test.js:5:14)
-      at Module._compile (node:internal/modules/cjs/loader:1092:14)
-      at Object.Module._extensions..js (node:internal/modules/cjs/loader:1121:10)
-      at Module.load (node:internal/modules/cjs/loader:972:32)
-      at Function.Module._load (node:internal/modules/cjs/loader:813:14)
-      at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:76:12)
-      at node:internal/main/run_main_module:17:47 {
-    shortMessage: 'bad usage',
-    info: {}
-  },
-  info: {},
-  code: 500,
-  className: 'general-error'
-}
-GeneralError: something went wrong: bad usage
-    at Object.<anonymous> (/home/bertho/dev/verror/test.js:7:14)
-    at Module._compile (node:internal/modules/cjs/loader:1092:14)
-    at Object.Module._extensions..js (node:internal/modules/cjs/loader:1121:10)
-    at Module.load (node:internal/modules/cjs/loader:972:32)
-    at Function.Module._load (node:internal/modules/cjs/loader:813:14)
-    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:76:12)
-    at node:internal/main/run_main_module:17:47
-caused by: VError: bad usage
-    at Object.<anonymous> (/home/bertho/dev/verror/test.js:5:14)
-    at Module._compile (node:internal/modules/cjs/loader:1092:14)
-    at Object.Module._extensions..js (node:internal/modules/cjs/loader:1121:10)
-    at Module.load (node:internal/modules/cjs/loader:972:32)
-    at Function.Module._load (node:internal/modules/cjs/loader:813:14)
-    at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:76:12)
-    at node:internal/main/run_main_module:17:47
-```
+
+    {
+      name: 'GeneralError',
+      message: 'something went wrong: bad usage',
+      shortMessage: 'something went wrong',
+      cause: VError: bad usage
+          at Object.<anonymous> (/home/bertho/dev/verror/test.js:5:14)
+          at Module._compile (node:internal/modules/cjs/loader:1092:14)
+          at Object.Module._extensions..js (node:internal/modules/cjs/loader:1121:10)
+          at Module.load (node:internal/modules/cjs/loader:972:32)
+          at Function.Module._load (node:internal/modules/cjs/loader:813:14)
+          at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:76:12)
+          at node:internal/main/run_main_module:17:47 {
+        shortMessage: 'bad usage',
+        info: {}
+      },
+      info: {},
+      code: 500,
+      className: 'general-error'
+    }
+    GeneralError: something went wrong: bad usage
+        at Object.<anonymous> (/home/bertho/dev/verror/test.js:7:14)
+        at Module._compile (node:internal/modules/cjs/loader:1092:14)
+        at Object.Module._extensions..js (node:internal/modules/cjs/loader:1121:10)
+        at Module.load (node:internal/modules/cjs/loader:972:32)
+        at Function.Module._load (node:internal/modules/cjs/loader:813:14)
+        at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:76:12)
+        at node:internal/main/run_main_module:17:47
+    caused by: VError: bad usage
+        at Object.<anonymous> (/home/bertho/dev/verror/test.js:5:14)
+        at Module._compile (node:internal/modules/cjs/loader:1092:14)
+        at Object.Module._extensions..js (node:internal/modules/cjs/loader:1121:10)
+        at Module.load (node:internal/modules/cjs/loader:972:32)
+        at Function.Module._load (node:internal/modules/cjs/loader:813:14)
+        at Function.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:76:12)
+        at node:internal/main/run_main_module:17:47
 
 # Contributing
 

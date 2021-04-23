@@ -1,20 +1,24 @@
 import parseConstructorArguments from './parseConstructorArguments';
 import VError from './verror';
-import { inheritsFrom, getInstance } from './utils';
+import { inheritsFrom } from './utils';
 
-function extendVError(that, ctor, code, className, args) {
-  const { options, shortmessage } = parseConstructorArguments(...args);
+function extendVError(_this, ctor, code, className, args) {
+  if (!(_this instanceof ctor)) {
+    return new ctor(...args);
+  }
 
-  options.decorate = {
+  const { options, shortMessage } = parseConstructorArguments(...args);
+
+  options.meta = {
     code,
     className,
-    ...options.decorate
+    ...options.meta
   }
 
   return VError.call(
-    getInstance(that, ctor, args),
+    _this,
     options,
-    shortmessage
+    shortMessage
   );
 }
 

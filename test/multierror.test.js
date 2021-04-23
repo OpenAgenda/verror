@@ -61,7 +61,7 @@ describe('MultiError', () => {
     const merr = errorFromList([err1, err2, err3]);
 
     expect(merr).toBeInstanceOf(MultiError);
-    expect(merr.errors()).toEqual([err1, err2, err3]);
+    expect(merr.errors).toEqual([err1, err2, err3]);
   });
 
   it('errorForEach', () => {
@@ -82,5 +82,14 @@ describe('MultiError', () => {
     errorForEach(merr, e => accum2.push(e));
 
     expect(accum2).toEqual([err1, err2, err3]);
+
+    expect(merr.toJSON()).toEqual({
+      name: 'MultiError',
+      message: 'first of 3 errors: error one',
+      shortMessage: 'first of 3 errors',
+      cause: err1,
+      info: {},
+      errors: [err1, err2, err3]
+    });
   });
 });

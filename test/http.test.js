@@ -54,9 +54,9 @@ describe('http', () => {
     });
   });
 
-  it('extend and override decorate option', () => {
+  it('extend and override meta option', () => {
     const err = new VError.BadRequest({
-      decorate: {
+      meta: {
         other: 42,
         className: 'very-bad-request'
       }
@@ -77,9 +77,28 @@ describe('http', () => {
     });
   });
 
-  it('throw with a bad decorate option', () => {
+  it('can not extends native properties', () => {
     expect(() => new VError.BadRequest({
-      decorate: 'no'
+      meta: {
+        name: 42,
+        cause: 'a cause',
+        info: null,
+        stack: 'lol'
+      }
+    }, 'something went wrong')).toThrow();
+  });
+
+  it('throw with a bad meta option', () => {
+    expect(() => new VError.BadRequest({
+      meta: 'no'
     })).toThrow();
+  });
+
+  it('wrapped http error conserve meta of cause', () => {
+    const err = new VError.BadRequest('something went wrong');
+    const werr = new VError(err);
+
+    expect(werr.code).toBe(400);
+    expect(werr.className).toBe('bad-request');
   });
 });

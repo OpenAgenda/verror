@@ -24,7 +24,7 @@ const { isError, isObject, isString } = require('./assert');
  *               (i.e., it may be a shallow copy), so it can be freely
  *               modified.
  *
- *    shortmessage    result of sprintf(sprintfArgs), taking options.strict
+ *    shortMessage    result of sprintf(sprintfArgs), taking options.strict
  *                    into account as described in README.md.
  */
 module.exports = function parseConstructorArguments(...argv) {
@@ -60,10 +60,10 @@ module.exports = function parseConstructorArguments(...argv) {
   }
 
   if (!isObject(options)) throw new AssertionError('options (object) is required');
-  if (options.decorate && !isObject(options.decorate)) throw new AssertionError('options.decorate must be an object');
+  if (options.meta && !isObject(options.meta)) throw new AssertionError('options.meta must be an object');
 
   return {
     options,
-    shortmessage: sprintfArgs.length === 0 ? '' : sprintf.apply(null, sprintfArgs)
+    shortMessage: sprintfArgs.length === 0 ? '' : sprintf.apply(null, sprintfArgs)
   };
 };

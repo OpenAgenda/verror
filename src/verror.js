@@ -5,9 +5,38 @@
 import AssertionError from 'assertion-error';
 import { isError, isFunc, isObject, isString } from './assert';
 import parseConstructorArguments from './parseConstructorArguments';
-import { defineProperty, defineProperties, inheritsFrom, getInstance } from './utils';
+import { defineProperty, defineProperties, inheritsFrom } from './utils';
 
-const DECORATE = '@@verror/decorate';
+const META = '@@verror/meta';
+
+const reserved = [
+  'name',
+  'message',
+  'shortMessage',
+  'cause',
+  'info',
+  'stack',
+  'fileName',
+  'lineNumber'
+];
+
+
+function mergeMeta(instance, meta) {
+  if (!meta) {
+    return;
+  }
+
+  for (const k in meta) {
+    if (Object.prototype.hasOwnProperty.call(meta, k)) {
+      if (reserved.includes(k)) {
+        throw new AssertionError(`"${k}" is a reserved meta`);
+      }
+
+      instance[META][k] = meta[k];
+      instance[k] = meta[k];
+    }
+  }
+}
 
 /*
  * See README.md for reference documentation.
@@ -18,15 +47,17 @@ function VError(...args) {
    * is defined to work this way, so we allow the constructor to be called
    * without "new".
    */
-  const that = getInstance(this, VError, args);
+  if (!(this instanceof VError)) {
+    return new VError(...args);
+  }
 
   /*
    * For convenience and backwards compatibility, we support several
    * different calling forms. Normalize them here.
    */
-  const { options, shortmessage } = parseConstructorArguments(...args);
-  const { cause, constructorOpt, info, name, skipCauseMessage, decorate } = options;
-  let message = shortmessage;
+  const { options, shortMessage } = parseConstructorArguments(...args);
+  const { cause, constructorOpt, info, name, skipCauseMessage, meta } = options;
+  let message = shortMessage;
 
   /*
    * If we've been given a cause, record a reference to it and update our
@@ -43,7 +74,7 @@ function VError(...args) {
   }
 
   // super
-  Error.call(that, message);
+  Error.call(this, message);
 
   /*
    * If we've been given a name, apply it now.
@@ -51,20 +82,20 @@ function VError(...args) {
   if (name) {
     if (!isString(name))
       throw new AssertionError('error\'s "name" must be a string');
-    that.name = name;
+    this.name = name;
   }
 
-  that.message = message;
+  this.message = message;
 
   /*
    * For debugging, we keep track of the original short message (attached
    * this Error particularly) separately from the complete message (which
    * includes the messages of our cause chain).
    */
-  that.shortMessage = shortmessage;
+  this.shortMessage = shortMessage;
 
   if (cause) {
-    that.cause = cause;
+    this.cause = cause;
   }
 
   /*
@@ -73,40 +104,31 @@ function VError(...args) {
    * objects here, but we don't want to use the original object in case
    * the caller modifies it later.
    */
-  that.info = {};
+  this.info = {};
 
   if (info) {
     for (const k in info) {
       if (Object.prototype.hasOwnProperty.call(info, k)) {
-        that.info[k] = info[k];
+        this.info[k] = info[k];
       }
     }
   }
 
-  if (decorate) {
-    defineProperty(that, {
-      key: DECORATE,
-      value: {}
-    });
+  defineProperty(this, {
+    key: META,
+    value: {}
+  });
 
-    for (const k in decorate) {
-      if (Object.prototype.hasOwnProperty.call(decorate, k)) {
-        that[DECORATE][k] = decorate[k];
-
-        if (!(k in that)) {
-          that[k] = decorate[k];
-        }
-      }
-    }
-  }
+  mergeMeta(this, VError.meta(this));
+  mergeMeta(this, meta);
 
   if (Error.captureStackTrace) {
-    Error.captureStackTrace(that, constructorOpt || that.constructor);
+    Error.captureStackTrace(this, constructorOpt || this.constructor);
   } else {
-    that.stack = (new Error()).stack;
+    this.stack = (new Error()).stack;
   }
 
-  return that;
+  return this;
 }
 
 inheritsFrom(VError, Error);
@@ -139,9 +161,9 @@ defineProperties(VError.prototype, [
       };
 
       // Conserve keys order in obj
-      for (const key in this[DECORATE]) {
-        if (Object.prototype.hasOwnProperty.call(this[DECORATE], key) && !(key in obj)) {
-          obj[key] = this[DECORATE][key];
+      for (const key in this[META]) {
+        if (Object.prototype.hasOwnProperty.call(this[META], key) && !(key in obj)) {
+          obj[key] = this[META][key];
         }
       }
 
@@ -171,6 +193,25 @@ defineProperties(VError, [
         for (const k in err.info) {
           if (Object.prototype.hasOwnProperty.call(err.info, k)) {
             rv[k] = err.info[k];
+          }
+        }
+      }
+
+      return rv;
+    }
+  },
+  {
+    key: 'meta',
+    value: function meta(err) {
+      if (!isError(err)) throw new AssertionError('err must be an Error');
+
+      const cause = VError.cause(err);
+      const rv = cause !== null ? VError.meta(cause) : {};
+
+      if (typeof err[META] === 'object' && err[META] !== null) {
+        for (const k in err[META]) {
+          if (Object.prototype.hasOwnProperty.call(err[META], k)) {
+            rv[k] = err[META][k];
           }
         }
       }
@@ -274,7 +315,7 @@ defineProperties(VError, [
       if (!isFunc(func)) throw new AssertionError('func (func) is required');
 
       if (err instanceof MultiError) {
-        err.errors().forEach((e) => {
+        err.errors.forEach((e) => {
           func(e);
         });
       } else {
@@ -293,6 +334,10 @@ VError.prototype.name = 'VError';
  * error, in which case a summary message will be printed.
  */
 function MultiError(errors) {
+  if (!(this instanceof MultiError)) {
+    return new  MultiError(errors);
+  }
+
   if (!Array.isArray(errors)) {
     throw new AssertionError('list of errors (array) is required');
   }
@@ -302,10 +347,12 @@ function MultiError(errors) {
 
   // super
   return VError.call(
-    getInstance(this, MultiError, errors),
+    this,
     {
       cause: errors[0],
-      decorate: { errors }
+      meta: {
+        errors: [...errors]
+      }
     },
     'first of %d error%s',
     errors.length,
@@ -315,31 +362,26 @@ function MultiError(errors) {
 
 inheritsFrom(MultiError, VError);
 
-defineProperties(MultiError.prototype, [
-  {
-    key: 'errors',
-    value: function errors() {
-      return this[DECORATE].errors.slice(0);
-    }
-  }
-]);
-
 MultiError.prototype.name = 'MultiError';
 
 /*
  * See README.md for reference details.
  */
 function WError(...args) {
-  const { options, shortmessage } = parseConstructorArguments(...args);
+  if (!(this instanceof WError)) {
+    return new WError(...args);
+  }
+
+  const { options, shortMessage } = parseConstructorArguments(...args);
 
   options.skipCauseMessage = true;
 
   // super
   return VError.call(
-    getInstance(this, WError, args),
+    this,
     options,
     '%s',
-    shortmessage
+    shortMessage
   );
 }
 
@@ -372,7 +414,7 @@ VError.VError = VError;
 VError.WError = WError;
 VError.MultiError = MultiError;
 
-VError.DECORATE = DECORATE;
+VError.META = META;
 
 export default VError;
 
