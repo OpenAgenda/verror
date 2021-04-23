@@ -4,11 +4,11 @@
  * tst.common.js: tests functionality that's common to the VError and WError classes.
  */
 
-const { VError, WError } = require('../lib');
+const VError = require('../lib');
 const common = require('./utils');
 
 /*
-   * Runs all tests using the class "cons".  We'll apply this to each of the main
+   * Runs all tests using the class "Cons".  We'll apply this to each of the main
    * classes.
    */
 function runTests(Cons, label) {
@@ -42,6 +42,15 @@ function runTests(Cons, label) {
         '    at Object.<anonymous> (dummy filename)',
         nodestack
       ].join('\n'));
+    });
+
+    it('used without "new"', () => {
+      const err = Cons('test %s', 'foo');
+
+      expect(err.name).toBe(label);
+      expect(err).toBeInstanceOf(Error);
+      expect(err).toBeInstanceOf(Cons);
+      expect(err.message).toBe('test foo');
     });
 
     it('options-argument form', () => {
@@ -200,7 +209,25 @@ describe('common', () => {
   Error.stackTraceLimit = 25;
 
   runTests(VError, 'VError');
-  runTests(WError, 'WError');
+  runTests(VError.WError, 'WError');
+  runTests(VError.HttpError, 'HttpError');
+  runTests(VError.BadRequest, 'BadRequest');
+  runTests(VError.NotAuthenticated, 'NotAuthenticated');
+  runTests(VError.PaymentError, 'PaymentError');
+  runTests(VError.Forbidden, 'Forbidden');
+  runTests(VError.NotFound, 'NotFound');
+  runTests(VError.MethodNotAllowed, 'MethodNotAllowed');
+  runTests(VError.NotAcceptable, 'NotAcceptable');
+  runTests(VError.Timeout, 'Timeout');
+  runTests(VError.Conflict, 'Conflict');
+  runTests(VError.Gone, 'Gone');
+  runTests(VError.LengthRequired, 'LengthRequired');
+  runTests(VError.Unprocessable, 'Unprocessable');
+  runTests(VError.TooManyRequests, 'TooManyRequests');
+  runTests(VError.GeneralError, 'GeneralError');
+  runTests(VError.NotImplemented, 'NotImplemented');
+  runTests(VError.BadGateway, 'BadGateway');
+  runTests(VError.Unavailable, 'Unavailable');
 
   it('fullStack works with an Error', () => {
     const err = new Error('Some error');

@@ -31,8 +31,6 @@ module.exports = function parseConstructorArguments(...argv) {
   let options;
   let sprintfArgs;
 
-  // TODO missing asserts
-
   /*
    * First, figure out which form of invocation we've been given.
    */
@@ -45,7 +43,9 @@ module.exports = function parseConstructorArguments(...argv) {
   } else if (typeof argv[0] === 'object') {
     options = {};
     for (const k in argv[0]) {
-      options[k] = argv[0][k];
+      if (Object.prototype.hasOwnProperty.call(argv[0], k)) {
+        options[k] = argv[0][k];
+      }
     }
     sprintfArgs = argv.slice(1);
   } else {
@@ -60,6 +60,7 @@ module.exports = function parseConstructorArguments(...argv) {
   }
 
   if (!isObject(options)) throw new AssertionError('options (object) is required');
+  if (options.decorate && !isObject(options.decorate)) throw new AssertionError('decorate must be an object');
 
   return {
     options,
