@@ -25,7 +25,7 @@ function runTests(Cons, label, isHttpError = true) {
       expect(VError.cause(err)).toBe(suberr);
 
       if (isHttpError) {
-        expect(typeof err.code).toBe('number');
+        expect(typeof err.statusCode).toBe('number');
         expect(typeof err.className).toBe('string');
       }
 

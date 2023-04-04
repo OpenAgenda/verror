@@ -33,6 +33,8 @@
   },
   "dependencies": {
     "assertion-error": "^1.1.0",
+    "depd": "^2.0.0",
+    "inherits": "^2.0.4",
     "sprintf-js": "^1.1.2"
   },
   "devDependencies": {

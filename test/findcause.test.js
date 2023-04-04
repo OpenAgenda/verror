@@ -2,7 +2,6 @@
  * tst.findcause.js: tests findCauseByName()/hasCauseWithName()/findCauseByType()/hasCauseWithType().
  */
 
-const util = require('util');
 const {
   VError,
   WError,

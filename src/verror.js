@@ -2,10 +2,11 @@
  * verror.js: richer JavaScript errors
  */
 
+import inherits from 'inherits';
 import AssertionError from 'assertion-error';
 import { isError, isFunc, isObject, isString } from './assert';
 import parseConstructorArguments from './parseConstructorArguments';
-import { defineProperty, defineProperties, inheritsFrom } from './utils';
+import { defineProperty, defineProperties } from './utils';
 
 const META = '@@verror/meta';
 
@@ -127,11 +128,9 @@ function VError(...args) {
   } else {
     this.stack = (new Error()).stack;
   }
-
-  return this;
 }
 
-inheritsFrom(VError, Error);
+inherits(VError, Error);
 
 defineProperties(VError.prototype, [
   {
@@ -189,7 +188,7 @@ defineProperties(VError, [
       const cause = VError.cause(err);
       const rv = cause !== null ? VError.info(cause) : {};
 
-      if (typeof err.info === 'object' && err.info !== null) {
+      if (isObject(err.info)) {
         for (const k in err.info) {
           if (Object.prototype.hasOwnProperty.call(err.info, k)) {
             rv[k] = err.info[k];
@@ -208,7 +207,7 @@ defineProperties(VError, [
       const cause = VError.cause(err);
       const rv = cause !== null ? VError.meta(cause) : {};
 
-      if (typeof err[META] === 'object' && err[META] !== null) {
+      if (isObject(err[META])) {
         for (const k in err[META]) {
           if (Object.prototype.hasOwnProperty.call(err[META], k)) {
             rv[k] = err[META][k];
@@ -346,7 +345,7 @@ function MultiError(errors) {
   }
 
   // super
-  return VError.call(
+  VError.call(
     this,
     {
       cause: errors[0],
@@ -360,7 +359,7 @@ function MultiError(errors) {
   );
 }
 
-inheritsFrom(MultiError, VError);
+inherits(MultiError, VError);
 
 MultiError.prototype.name = 'MultiError';
 
@@ -377,7 +376,7 @@ function WError(...args) {
   options.skipCauseMessage = true;
 
   // super
-  return VError.call(
+  VError.call(
     this,
     options,
     '%s',
@@ -385,7 +384,7 @@ function WError(...args) {
   );
 }
 
-inheritsFrom(WError, VError);
+inherits(WError, VError);
 
 defineProperties(WError.prototype, [
   {

@@ -41,7 +41,7 @@ describe('http', () => {
   it('simple http error', () => {
     const err = new VError.BadRequest('something went wrong');
 
-    expect(err.code).toBe(400);
+    expect(err.statusCode).toBe(400);
     expect(err.className).toBe('bad-request');
     expect(err.toJSON()).toStrictEqual({
       name: 'BadRequest',
@@ -50,6 +50,7 @@ describe('http', () => {
       cause: undefined,
       info: {},
       code: 400,
+      statusCode: 400,
       className: 'bad-request'
     });
   });
@@ -62,7 +63,7 @@ describe('http', () => {
       }
     }, 'something went wrong');
 
-    expect(err.code).toBe(400);
+    expect(err.statusCode).toBe(400);
     expect(err.className).toBe('very-bad-request');
     expect(err.other).toBe(42);
     expect(err.toJSON()).toStrictEqual({
@@ -72,6 +73,7 @@ describe('http', () => {
       cause: undefined,
       info: {},
       code: 400,
+      statusCode: 400,
       className: 'very-bad-request',
       other: 42
     });
@@ -98,7 +100,7 @@ describe('http', () => {
     const err = new VError.BadRequest('something went wrong');
     const werr = new VError(err);
 
-    expect(werr.code).toBe(400);
+    expect(werr.statusCode).toBe(400);
     expect(werr.className).toBe('bad-request');
   });
 });

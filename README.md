@@ -32,6 +32,31 @@ The classes here are:
 > - `findCauseByType` and `hasCauseWithType` methods have been added
 > - `SError` class has been removed
 
+# Table of content
+
+- [Quick start](#quick-start)
+- [Deeper dive](#deeper-dive)
+- [Reference: VError, WError](#reference--verror--werror)
+  * [Constructors](#constructors)
+  * [Public properties](#public-properties)
+  * [Static methods](#static-methods)
+    + [`VError.cause(err)`](#-verrorcause-err--)
+    + [`VError.info(err)`](#-verrorinfo-err--)
+    + [`VError.meta(err)`](#-verrormeta-err--)
+    + [`VError.fullStack(err)`](#-verrorfullstack-err--)
+    + [`VError.findCauseByName(err, name)`](#-verrorfindcausebyname-err--name--)
+    + [`VError.hasCauseWithName(err, name)`](#-verrorhascausewithname-err--name--)
+    + [`VError.findCauseByType(err, type)`](#-verrorfindcausebytype-err--type--)
+    + [`VError.hasCauseWithType(err, type)`](#-verrorhascausewithtype-err--type--)
+    + [`VError.errorFromList(errors)`](#-verrorerrorfromlist-errors--)
+    + [`VError.errorForEach(err, func)`](#-verrorerrorforeach-err--func--)
+  * [Examples](#examples)
+- [Reference: MultiError](#reference--multierror)
+  * [Public methods](#public-methods)
+    + [`errors()`](#-errors---)
+- [HTTP errors](#http-errors)
+  * [Example](#example)
+- [Contributing](#contributing)
 
 # Quick start
 
@@ -252,7 +277,7 @@ Option name      | Type             | Meaning
 `cause`          | any Error object | Indicates that the new error was caused by `cause`.  See `cause()` below.  If unspecified, the cause will be `null`.
 `constructorOpt` | function         | If specified, then the stack trace for this error ends at function `constructorOpt`.  Functions called by `constructorOpt` will not show up in the stack.  This is useful when this class is subclassed.
 `info`           | object           | Specifies arbitrary informational properties that are available through the `VError.info(err)` static class method.  See [that method](#verrorinfoerr) for details.
-`meta`       | object           | Specifies arbitrary informational properties that are available through `this` instance.  Like `code` and `className` with [http errors](#http-errors) for details.<br /><br />Works like info with a few differences:<br /><br />- properties are assigned to the instance itself rather than to an info sub-object.<br />- the properties are copied to this in the constructor, which implies that an error also has all the meta of its cause chain at its level.
+`meta`       | object           | Specifies arbitrary informational properties that are available through `this` instance.  Like `code` and `className` with [HTTP errors](#http-errors) for details.<br /><br />Works like info with a few differences:<br /><br />- properties are assigned to the instance itself rather than to an info sub-object.<br />- the properties are copied to this in the constructor, which implies that an error also has all the meta of its cause chain at its level.
 
 The second form is equivalent to using the first form with the specified `cause`
 as the error's cause.  This form is distinguished from the first form because
@@ -287,7 +312,7 @@ The `stack` property is managed entirely by the underlying JavaScript
 implementation.  It's generally implemented using a getter function because
 constructing the human-readable stack trace is somewhat expensive.
 
-## Class methods
+## Static methods
 
 The following methods are defined on the `VError` class and as exported
 functions on the `verror` module.  They're defined this way rather than using
@@ -324,7 +349,7 @@ the `meta` option to the constructor.  Properties not specified in the
 constructor for this Error are implicitly inherited from this error's cause.
 
 These properties are intended to provide first level metadata
-about the error.  For an http error, the meta may include the `code` and`
+about the error.  For an HTTP error, the meta may include the `statusCode` and`
 className` properties. `meta` must be an object.
 
 ### `VError.fullStack(err)`
@@ -554,7 +579,7 @@ to use than this constructor.
 
 Returns an array of the errors used to construct this `MultiError`.
 
-# Http errors
+# HTTP errors
 
 The following error types, all of which are instances of `VError`, are available:
 
@@ -575,14 +600,14 @@ The following error types, all of which are instances of `VError`, are available
 - 502: `BadGateway`
 - 503: `Unavailable`
 
-These errors are aliased by their http code, such as `VError[400] === VError.BadRequest`.
+These errors are aliased by their HTTP status code, such as `VError[400] === VError.BadRequest`.
 
-All http errors have a default `options.meta` with the following values, which are overridable:
+All HTTP errors have a default `options.meta` with the following values, which are overridable:
 
-- `code` - The HTTP status code
+- `statusCode` - The HTTP status code
 - `className` - A CSS compatible name of the error type. (e.g. "bad-request" , etc.)
 
-# Example
+## Example
 
 ```js
 const err1 = new VError('bad usage');
@@ -611,7 +636,7 @@ This outputs:
         info: {}
       },
       info: {},
-      code: 500,
+      statusCode: 500,
       className: 'general-error'
     }
     GeneralError: something went wrong: bad usage
