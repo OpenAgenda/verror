@@ -24,3 +24,4 @@ const httpAliases = {
 Object.assign(VError, httpErrors, httpAliases);
 
 export default VError;
+export * from './http';

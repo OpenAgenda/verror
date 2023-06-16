@@ -19,11 +19,11 @@
     "dist"
   ],
   "main": "index.js",
-  "jsnext:main": "dist/esm.mjs",
-  "module": "dist/esm.mjs",
+  "jsnext:main": "dist/index.mjs",
+  "module": "dist/index.mjs",
   "exports": {
     ".": {
-      "import": "./dist/esm.mjs",
+      "import": "./dist/index.mjs",
       "require": "./index.js"
     },
     "./package.json": "./package.json"
