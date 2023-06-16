@@ -16,19 +16,21 @@
     "url": "https://github.com/OpenAgenda/verror.git"
   },
   "files": [
-    "esm",
-    "lib"
+    "dist"
   ],
-  "main": "lib/index.js",
-  "jsnext:main": "esm/esm.js",
-  "module": "esm/esm.js",
+  "main": "index.js",
+  "jsnext:main": "dist/esm.mjs",
+  "module": "dist/esm.mjs",
+  "exports": {
+    ".": {
+      "import": "./dist/esm.mjs",
+      "require": "./index.js"
+    },
+    "./package.json": "./package.json"
+  },
   "sideEffects": false,
   "scripts": {
-    "prepack": "yarn clean && yarn build",
-    "build": "yarn build:esm && yarn build:cjs",
-    "build:esm": "babel --copy-files src -d esm -s --env-name esm",
-    "build:cjs": "babel --copy-files src -d lib -s",
-    "clean": "rimraf esm lib",
+    "prepack": "tsup src --clean --format esm,cjs",
     "test": "jest"
   },
   "dependencies": {
@@ -38,10 +40,7 @@
     "sprintf-js": "^1.1.2"
   },
   "devDependencies": {
-    "@babel/cli": "^7.22.5",
-    "@babel/core": "^7.22.5",
-    "@openagenda/babel-preset": "^1.5.0",
     "jest": "^26.1.0",
-    "rimraf": "^3.0.1"
+    "tsup": "^6.7.0"
   }
 }

@@ -1,8 +1,6 @@
-'use strict';
-
-const { sprintf } = require('sprintf-js');
-const AssertionError = require('assertion-error');
-const { isError, isObject, isString } = require('./assert');
+import { sprintf } from 'sprintf-js';
+import AssertionError from 'assertion-error';
+import { isError, isObject, isString } from './assert';
 
 /*
  * Common function used to parse constructor arguments for VError and WError.
@@ -27,7 +25,7 @@ const { isError, isObject, isString } = require('./assert');
  *    shortMessage    result of sprintf(sprintfArgs), taking options.strict
  *                    into account as described in README.md.
  */
-module.exports = function parseConstructorArguments(...argv) {
+export default function parseConstructorArguments(...argv) {
   let options;
   let sprintfArgs;
 
