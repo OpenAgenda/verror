@@ -2,7 +2,7 @@
  * tst.inherit.js: test that inheriting from VError and WError work as expected.
  */
 
-const VError = require('../lib');
+const VError = require('..');
 const common = require('./utils');
 
 function runTests(Cons, label, isHttpError = true) {

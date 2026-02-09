@@ -2,7 +2,7 @@
  * tst.werror.js: tests basic functionality specific to the WError class.
  */
 
-const verror = require('../lib');
+const verror = require('..');
 const common = require('./utils');
 
 const VError = verror.VError;

@@ -2,7 +2,7 @@
  * tst.multierror.js: tests MultiError class
  */
 
-const { VError, MultiError, errorFromList, errorForEach } = require('../lib');
+const { VError, MultiError, errorFromList, errorForEach } = require('..');
 const common = require('./utils');
 
 describe('MultiError', () => {

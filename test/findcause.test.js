@@ -9,7 +9,7 @@ const {
   hasCauseWithName,
   findCauseByType,
   hasCauseWithType
-} = require('../lib');
+} = require('..');
 
 /*
   * This class deliberately doesn't inherit from our error classes.

@@ -1,4 +1,4 @@
-const VError = require('../lib');
+const VError = require('..');
 
 describe('http', () => {
   describe('error types', () => {

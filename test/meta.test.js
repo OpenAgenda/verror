@@ -3,7 +3,7 @@
  * errors.
  */
 
-const VError = require('../lib');
+const VError = require('..');
 const { META } = VError;
 
 describe('meta', () => {

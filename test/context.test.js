@@ -3,7 +3,7 @@
  */
 
 const vm = require('vm');
-const VError = require('../lib');
+const VError = require('..');
 
 /*
  * We run the same set of tests using two different errors: one whose name is

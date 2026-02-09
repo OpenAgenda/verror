@@ -3,7 +3,7 @@
  * errors.
  */
 
-const VError = require('../lib');
+const VError = require('..');
 
 describe('info', () => {
   it('base case using "options" to specify cause', () => {
