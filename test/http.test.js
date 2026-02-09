@@ -103,4 +103,35 @@ describe('http', () => {
     expect(werr.statusCode).toBe(400);
     expect(werr.className).toBe('bad-request');
   });
+
+  it('HTTPError exists and inheritance hierarchy is correct', () => {
+    // HTTPError should exist and be a function
+    expect(typeof VError.HTTPError).toBe('function');
+
+    // Create instances
+    const httpErr = new VError.HTTPError('generic http error');
+    const badRequestErr = new VError.BadRequest('bad request');
+    const notFoundErr = new VError.NotFound('not found');
+
+    // HTTPError should extend VError
+    expect(httpErr instanceof VError.HTTPError).toBe(true);
+    expect(httpErr instanceof VError.VError).toBe(true);
+    expect(httpErr instanceof Error).toBe(true);
+
+    // Specific HTTP errors should extend HTTPError
+    expect(badRequestErr instanceof VError.BadRequest).toBe(true);
+    expect(badRequestErr instanceof VError.HTTPError).toBe(true);
+    expect(badRequestErr instanceof VError.VError).toBe(true);
+    expect(badRequestErr instanceof Error).toBe(true);
+
+    expect(notFoundErr instanceof VError.NotFound).toBe(true);
+    expect(notFoundErr instanceof VError.HTTPError).toBe(true);
+    expect(notFoundErr instanceof VError.VError).toBe(true);
+    expect(notFoundErr instanceof Error).toBe(true);
+
+    // Check names
+    expect(httpErr.name).toBe('HTTPError');
+    expect(badRequestErr.name).toBe('BadRequest');
+    expect(notFoundErr.name).toBe('NotFound');
+  });
 });

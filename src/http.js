@@ -5,6 +5,24 @@ import VError from './verror';
 
 const deprecate = depd('@openangeda/verror');
 
+// Base HTTPError class
+function HTTPError(...args) {
+  if (!(this instanceof HTTPError)) {
+    return new HTTPError(...args);
+  }
+
+  const { options, shortMessage } = parseConstructorArguments(...args);
+
+  VError.call(
+    this,
+    options,
+    shortMessage
+  );
+}
+
+inherits(HTTPError, VError);
+HTTPError.prototype.name = 'HTTPError';
+
 function createError(name, statusCode, className) {
   const ExtendedError = function (...args) {
     if (!(this instanceof ExtendedError)) {
@@ -20,7 +38,7 @@ function createError(name, statusCode, className) {
       ...options.meta
     };
 
-    VError.call(
+    HTTPError.call(
       this,
       options,
       shortMessage
@@ -32,7 +50,7 @@ function createError(name, statusCode, className) {
   // function.name
   Object.defineProperty(ExtendedError, 'name', { configurable: true, value: name });
 
-  inherits(ExtendedError, VError);
+  inherits(ExtendedError, HTTPError);
   ExtendedError.prototype.name = name;
 
   return ExtendedError;
@@ -58,6 +76,7 @@ const Unavailable = createError('Unavailable', 503, 'unavailable');
 
 export {
   VError,
+  HTTPError,
   BadRequest,
   NotAuthenticated,
   PaymentError,

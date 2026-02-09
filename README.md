@@ -24,7 +24,7 @@ The classes here are:
   for logging and debugging.
 * **MultiError**, which is just an Error that encapsulates one or more other
   errors.  (This is used for parallel operations that return several errors.)
-* [http errors](#http-errors)
+* **HTTPError**, a base class for all HTTP-related errors. See [http errors](#http-errors) for details on the complete HTTP error hierarchy.
   
 > This project is a fork of https://github.com/joyent/node-verror with some changes:
 > - Is now browser compatible, no more dependencies linking it to Node
@@ -581,7 +581,14 @@ Returns an array of the errors used to construct this `MultiError`.
 
 # HTTP errors
 
-The following error types, all of which are instances of `VError`, are available:
+This module provides a specialized error hierarchy for HTTP errors:
+
+* **HTTPError** is a base class for all HTTP-related errors. It extends `VError` and serves as an intermediate class for all HTTP status code errors.
+* All specific HTTP error types (like `BadRequest`, `NotFound`, etc.) extend `HTTPError`.
+
+This hierarchy allows you to check if an error is HTTP-related using `instanceof HTTPError`, while still being able to check for specific error types or use `VError.findCauseByName()` and `VError.findCauseByType()`.
+
+The following error types, all of which extend `HTTPError`, are available:
 
 - 400: `BadRequest`
 - 401: `NotAuthenticated`
@@ -616,6 +623,15 @@ const err2 = new GeneralError(err1, 'something went wrong');
 
 console.log(err2.toJSON());
 console.log(VError.fullStack(err2));
+
+// Check if an error is HTTP-related
+console.log(err2 instanceof HTTPError); // true
+console.log(err2 instanceof VError); // true
+
+// Works with any HTTP error
+const notFoundErr = new NotFound('resource not found');
+console.log(notFoundErr instanceof HTTPError); // true
+console.log(notFoundErr instanceof NotFound); // true
 ```
 
 This outputs:
