@@ -15,6 +15,9 @@
     "type": "git",
     "url": "https://github.com/OpenAgenda/verror.git"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "files": [
     "dist"
   ],
